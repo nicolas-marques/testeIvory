@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Campo Minado</title>
+    <script src="js/campo-minado.js"></script>
+  </head>
+
+  <body>
+    <div id="exibir-execucao"></div>
+
+    <script>
+      var campoMinado = new CampoMinado();
+
+      document.getElementById("exibir-execucao").innerHTML +=
+        "----------- Início do jogo -----------";
+      document.getElementById("exibir-execucao").innerHTML +=
+        "<pre>" + campoMinado.Tabuleiro() + "</pre>";
+
+      
+
+      var fechadas = [];
+      var minas = [];
+      var abrir = [];
+
+      while (campoMinado.JogoStatus() == 0) {
+        var tabuleiro = campoMinado.Tabuleiro();
+
+        document.getElementById("exibir-execucao").innerHTML +=
+          "----------- Status: Jogo em aberto -----------";
+        document.getElementById("exibir-execucao").innerHTML +=
+          "<pre>" + tabuleiro + "</pre>";
+
+        tabuleiro = tabuleiro.split("\r\n").join("");
+
+        for (var i = 0; i < 81; i++) {
+          if (i % 9 == 0) {
+            var linha = calcularNumeroLinha(i);
+          }
+          var coluna = calcularNumeroColuna(linha, i);
+          if (tabuleiro[i] != 0 && tabuleiro[i] != "-") {
+            if (linha != 1 && coluna != 1 && tabuleiro[i - 10] == "-") {
+              fechadas.push(i - 10);
+            }
+
+            if (linha != 1 && tabuleiro[i - 9] == "-") {
+              fechadas.push(i - 9);
+            }
+
+            if (linha != 1 && coluna != 9 && tabuleiro[i - 8] == "-") {
+              fechadas.push(i - 8);
+            }
+
+            if (coluna != 9 && tabuleiro[i + 1] == "-") {
+              fechadas.push(i + 1);
+            }
+
+            if (linha != 9 && coluna != 9 && tabuleiro[i + 10] == "-") {
+              fechadas.push(i + 10);
+            }
+
+            if (linha != 9 && tabuleiro[i + 9] == "-") {
+              fechadas.push(i + 9);
+            }
+
+            if (linha != 9 && coluna != 1 && tabuleiro[i + 8] == "-") {
+              fechadas.push(i + 8);
+            }
+
+            if (coluna != 1 && tabuleiro[i - 1] == "-") {
+              fechadas.push(i - 1);
+            }
+
+            if (fechadas.length == tabuleiro[i]) {
+              fechadas.forEach((casa) => {
+                if (minas.indexOf(casa) == -1) {
+                  var minaLinha = calcularNumeroLinha(casa);
+                  var minaColuna = calcularNumeroColuna(minaLinha, casa);
+
+                  document.getElementById("exibir-execucao").innerHTML +=
+                    "<pre>Bomba encontrada: linha(" +
+                    minaLinha +
+                    ") / coluna(" +
+                    minaColuna +
+                    ")</pre>";
+                  minas.push(casa);
+                }
+              });
+            }
+
+            if (fechadas.length > tabuleiro[i]) {
+              abrir = fechadas.filter((x) => !minas.includes(x));
+
+              if (fechadas.length - tabuleiro[i] == abrir.length) {
+                abrir.forEach((casa) => {
+                  var abrirLinha = calcularNumeroLinha(casa);
+                  var abrirColuna = calcularNumeroColuna(abrirLinha, casa);
+                  campoMinado.Abrir(abrirLinha, abrirColuna);
+
+                  document.getElementById("exibir-execucao").innerHTML +=
+                    "<pre>Abrindo casa: linha(" +
+                    abrirLinha +
+                    ") / coluna(" +
+                    abrirColuna +
+                    ")</pre>";
+                });
+
+                fechadas = [];
+                break;
+              }
+            }
+
+            fechadas = [];
+          }
+        }
+      }
+
+
+      function calcularNumeroLinha(posicao) {
+        return ~~(posicao / 9) + 1;
+      }
+
+      function calcularNumeroColuna(linha, posicao) {
+        return linha == 1 ? posicao + 1 : posicao - (linha - 1) * 9 + 1;
+      }
+
+      document.getElementById("exibir-execucao").innerHTML +=
+        "----------- Status: " +
+        (campoMinado.JogoStatus() == 1
+          ? "Parabens, você venceu"
+          : "Game Over") +
+        " -----------";
+      document.getElementById("exibir-execucao").innerHTML +=
+        "<pre>" + campoMinado.Tabuleiro() + "</pre>";
+    </script>
+  </body>
+</html>
